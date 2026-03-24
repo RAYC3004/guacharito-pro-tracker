@@ -1,1 +1,36 @@
+name: Guacharito Data & Forecast Sync
 
+on:
+  schedule:
+    - cron: '*/30 * * * *' # Ejecuta automáticamente cada 30 minutos
+  workflow_dispatch: # Permite la ejecución manual mediante botón
+
+permissions:
+  contents: write # Permiso estricto para sobreescribir los archivos CSV y TXT
+
+jobs:
+  sincronizar_datos:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout del Repositorio
+        uses: actions/checkout@v3
+
+      - name: Configurar Entorno Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.9'
+
+      - name: Instalar Dependencias
+        run: |
+          pip install requests beautifulsoup4 pandas lxml
+
+      - name: Ejecutar Extractor y Análisis
+        run: python scraper_guacharito.py
+
+      - name: Guardar Cambios en GitHub
+        run: |
+          git config --global user.name 'GitHub Action Bot'
+          git config --global user.email 'action@github.com'
+          git add historico_resultados.csv analisis_brujo.txt
+          git commit -m "Sincronización de datos y análisis de pronóstico" || echo "No hay cambios nuevos para guardar"
+          git push
