@@ -51,7 +51,6 @@ def extraer_datos_por_fecha(dias_atras):
     fecha_dt = datetime.now() - timedelta(days=dias_atras)
     fecha_str = fecha_dt.strftime('%Y-%m-%d')
     
-    # Manejo de URLs según la estructura de la página
     if dias_atras == 0:
         url = URL_BASE
     elif dias_atras == 1:
@@ -67,16 +66,13 @@ def extraer_datos_por_fecha(dias_atras):
         
         resultados_dia = []
         
-        # Estrategia robusta: buscar cualquier etiqueta que contenga una hora (ej. 08:30 AM)
         nodos_hora = soup.find_all(string=re.compile(r'\d{1,2}:\d{2}\s*(?:AM|PM)', re.IGNORECASE))
         
         for nodo in nodos_hora:
-            # Subir 2 niveles en el HTML para capturar el contenedor completo (Imagen + Texto + Hora)
             padre = nodo.parent.parent
             if padre:
                 texto_bloque = padre.get_text(separator=' ', strip=True).upper()
                 
-                # Buscar el número y el nombre en ese mismo bloque
                 match_animal = re.search(r'\b(\d{1,2})\s+([A-ZÁÉÍÓÚÑ]+)\b', texto_bloque)
                 match_hora = re.search(r'(\d{1,2}:\d{2}\s*(?:AM|PM))', texto_bloque)
                 
@@ -85,7 +81,6 @@ def extraer_datos_por_fecha(dias_atras):
                     nombre = match_animal.group(2)
                     hora = match_hora.group(1)
                     
-                    # Validar estrictamente contra el diccionario maestro para evitar falsos positivos
                     if num in ANIMALITOS_MASTER and ANIMALITOS_MASTER[num] == nombre:
                         resultados_dia.append({
                             "fecha": fecha_str,
@@ -99,43 +94,65 @@ def extraer_datos_por_fecha(dias_atras):
         return []
 
 def validar_teoria_pronostico(df):
-    """Verifica la efectividad de la Tabla del Brujo en los últimos 30 días."""
-    print("--- Generando Análisis de la Teoría del Brujo ---")
+    """Verifica la Tabla del Brujo y genera el Semáforo de Probabilidades."""
+    print("--- Generando Análisis del Semáforo del Brujo ---")
     
-    # Filtrar solo el último mes para evaluar
-    fecha_limite = (datetime.now() - timedelta(days=30)).strftime('%Y-%m-%d')
-    df_mes = df[df['fecha'] >= fecha_limite]
+    # Convertir la columna de fechas para poder hacer cálculos matemáticos
+    df['fecha'] = pd.to_datetime(df['fecha'])
+    fecha_hoy = datetime.now()
     
-    numeros_sorteados = df_mes['numero'].astype(str).unique()
+    # Calcular hace cuántos días fue la última vez que salió CADA número
+    ultimas_salidas = df.groupby('numero')['fecha'].max()
     
-    parejas_completadas = []
-    parejas_pendientes = []
+    parejas_rojas = []     # +15 días sin salir (ALTA PROBABILIDAD)
+    parejas_amarillas = [] # 7 a 14 días sin salir (MEDIA PROBABILIDAD)
+    parejas_verdes = []    # 1 a 6 días sin salir (BAJA PROBABILIDAD)
+    parejas_quemadas = 0   # Ya salió uno de los dos recientemente (hoy)
     
     for p1, p2 in TABLA_BRUJO:
-        if p1 in numeros_sorteados and p2 in numeros_sorteados:
-            parejas_completadas.append(f"✅ Completada: {p1} y {p2}")
+        # Si no ha salido nunca en el historial, le ponemos 999 días
+        fecha_p1 = ultimas_salidas.get(p1, fecha_hoy - timedelta(days=999))
+        fecha_p2 = ultimas_salidas.get(p2, fecha_hoy - timedelta(days=999))
+        
+        dias_p1 = (fecha_hoy - fecha_p1).days
+        dias_p2 = (fecha_hoy - fecha_p2).days
+        
+        # El tiempo "invicto" de la pareja lo dicta el número que salió MÁS RECIENTEMENTE
+        dias_sin_salir = min(dias_p1, dias_p2)
+        
+        # LÓGICA DE CLASIFICACIÓN
+        if dias_sin_salir >= 15:
+            parejas_rojas.append(f"🔴 {p1} - {p2} ({dias_sin_salir} días invicta)")
+        elif 7 <= dias_sin_salir <= 14:
+            parejas_amarillas.append(f"🟡 {p1} - {p2} ({dias_sin_salir} días invicta)")
+        elif 1 <= dias_sin_salir <= 6:
+            parejas_verdes.append(f"🟢 {p1} - {p2} ({dias_sin_salir} días invicta)")
         else:
-            parejas_pendientes.append(f"⏳ Pendiente: {p1} - {p2}")
-            
-    tasa_exito = (len(parejas_completadas) / len(TABLA_BRUJO)) * 100
-    
-    # Guardar los resultados en el archivo de texto
+            # Si salió hoy (0 días), está quemada
+            parejas_quemadas += 1
+
+    # Generamos el reporte visual que luego mandaremos a Telegram
     with open('analisis_brujo.txt', 'w', encoding='utf-8') as f:
-        f.write(f"=== REPORTE DE EFECTIVIDAD (Últimos 30 días) ===\n")
-        f.write(f"Generado el: {datetime.now().strftime('%Y-%m-%d %I:%M %p')}\n")
-        f.write(f"Efectividad de la teoría: {tasa_exito:.1f}%\n")
-        f.write(f"Parejas completadas en el mes: {len(parejas_completadas)} de 50\n\n")
+        f.write("🚨 REPORTE DEL BRUJO 🚨\n")
+        f.write(f"📅 Fecha: {fecha_hoy.strftime('%Y-%m-%d %I:%M %p')}\n")
+        f.write(f"🔥 Parejas Quemadas (Descartadas hoy): {parejas_quemadas} de 50\n")
+        f.write("="*30 + "\n\n")
         
-        f.write("--- PAREJAS COMPLETADAS ---\n")
-        f.writelines('\n'.join(parejas_completadas) + '\n\n')
-        
-        f.write("--- PAREJAS PENDIENTES (Buenas para jugar) ---\n")
-        f.writelines('\n'.join(parejas_pendientes) + '\n')
+        if parejas_rojas:
+            f.write("🎯 ALERTA ROJA (JUGAR FUERTE - MÁXIMA PROBABILIDAD)\n")
+            f.writelines('\n'.join(parejas_rojas) + '\n\n')
+            
+        if parejas_amarillas:
+            f.write("⚠️ ALERTA AMARILLA (EN OBSERVACIÓN)\n")
+            f.writelines('\n'.join(parejas_amarillas) + '\n\n')
+            
+        if parejas_verdes:
+            f.write("✅ ALERTA VERDE (FRÍAS - SALIERON RECIENTE)\n")
+            f.writelines('\n'.join(parejas_verdes) + '\n')
 
 def ejecutar():
     file_name = 'historico_resultados.csv'
     
-    # 1. Cargar archivo existente para evitar duplicados
     if os.path.exists(file_name):
         df_historico = pd.read_csv(file_name)
         fechas_ya_descargadas = set(df_historico['fecha'].unique())
@@ -145,37 +162,30 @@ def ejecutar():
 
     nuevos_registros = []
     
-    # 2. Consultar hasta 1 año (365 días) de manera inteligente
     for i in range(366):
         fecha_evaluar = (datetime.now() - timedelta(days=i)).strftime('%Y-%m-%d')
         
-        # Solo extrae si es HOY (i==0) o si la fecha NO está en nuestro CSV
         if i == 0 or fecha_evaluar not in fechas_ya_descargadas:
             datos_dia = extraer_datos_por_fecha(i)
             if datos_dia:
                 nuevos_registros.extend(datos_dia)
-            time.sleep(1) # Pausa técnica de 1 segundo entre días
+            time.sleep(1)
 
-    # 3. Consolidar, limpiar y ordenar
     if nuevos_registros:
         df_nuevos = pd.DataFrame(nuevos_registros)
         df_final = pd.concat([df_historico, df_nuevos])
         
-        # Eliminar cualquier duplicado exacto
         df_final = df_final.drop_duplicates(subset=['fecha', 'hora', 'numero'])
         
-        # Ordenar cronológicamente (Fecha descendente, Hora descendente)
         df_final['hora_temp'] = pd.to_datetime(df_final['hora'], format='%I:%M %p', errors='coerce').dt.time
         df_final = df_final.sort_values(by=['fecha', 'hora_temp'], ascending=[False, False]).drop(columns=['hora_temp'])
         
         df_final.to_csv(file_name, index=False)
         print(f"✅ Archivo CSV actualizado. Total de registros: {len(df_final)}")
         
-        # 4. Generar el pronóstico con los datos actualizados
         validar_teoria_pronostico(df_final)
     else:
         print("✅ No se detectaron sorteos nuevos para agregar.")
-        # Generamos el pronóstico igual por si fue una ejecución manual
         validar_teoria_pronostico(df_historico)
 
 if __name__ == "__main__":
