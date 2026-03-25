@@ -93,45 +93,55 @@ def extraer_datos_por_fecha(dias_atras):
         print(f"Error accediendo a {url}: {e}")
         return []
 
+def limpiar_formato_numero(x):
+    """Fuerza a que los números se mantengan en su formato original de texto (00, 0, 35)."""
+    val = str(x).strip()
+    if val.endswith('.0'): # Por si Pandas lo convirtió en float
+        val = val[:-2]
+    if val in ["0", "00"]:
+        return val
+    return val.zfill(2)
+
 def validar_teoria_pronostico(df):
     """Verifica la Tabla del Brujo y genera el Semáforo de Probabilidades."""
     print("--- Generando Análisis del Semáforo del Brujo ---")
     
-    # Convertir la columna de fechas para poder hacer cálculos matemáticos
+    # Blindaje de Datos: Aseguramos fechas y forzamos que 'numero' sea texto exacto
     df['fecha'] = pd.to_datetime(df['fecha'])
+    df['numero'] = df['numero'].apply(limpiar_formato_numero)
+    
     fecha_hoy = datetime.now()
     
-    # Calcular hace cuántos días fue la última vez que salió CADA número
+    # Agrupamos por número estricto para buscar la última fecha que salió
     ultimas_salidas = df.groupby('numero')['fecha'].max()
     
-    parejas_rojas = []     # +15 días sin salir (ALTA PROBABILIDAD)
-    parejas_amarillas = [] # 7 a 14 días sin salir (MEDIA PROBABILIDAD)
-    parejas_verdes = []    # 1 a 6 días sin salir (BAJA PROBABILIDAD)
-    parejas_quemadas = 0   # Ya salió uno de los dos recientemente (hoy)
+    parejas_rojas = []     # +15 días sin salir
+    parejas_amarillas = [] # 7 a 14 días sin salir
+    parejas_verdes = []    # 1 a 6 días sin salir
+    parejas_quemadas = 0   
     
     for p1, p2 in TABLA_BRUJO:
-        # Si no ha salido nunca en el historial, le ponemos 999 días
+        # Buscamos en el diccionario, si no existe usamos 999 como comodín de que nunca ha salido
         fecha_p1 = ultimas_salidas.get(p1, fecha_hoy - timedelta(days=999))
         fecha_p2 = ultimas_salidas.get(p2, fecha_hoy - timedelta(days=999))
         
         dias_p1 = (fecha_hoy - fecha_p1).days
         dias_p2 = (fecha_hoy - fecha_p2).days
         
-        # El tiempo "invicto" de la pareja lo dicta el número que salió MÁS RECIENTEMENTE
+        # Tomamos el número que salió MÁS RECIENTEMENTE para definir la pareja
         dias_sin_salir = min(dias_p1, dias_p2)
         
-        # LÓGICA DE CLASIFICACIÓN
         if dias_sin_salir >= 15:
-            parejas_rojas.append(f"🔴 {p1} - {p2} ({dias_sin_salir} días invicta)")
+            # Filtramos para no mostrar los 999 si es que tu CSV aún no tiene suficiente data histórica
+            dias_mostrar = "Más de 30" if dias_sin_salir == 999 else dias_sin_salir
+            parejas_rojas.append(f"🔴 {p1} - {p2} ({dias_mostrar} días invicta)")
         elif 7 <= dias_sin_salir <= 14:
             parejas_amarillas.append(f"🟡 {p1} - {p2} ({dias_sin_salir} días invicta)")
         elif 1 <= dias_sin_salir <= 6:
             parejas_verdes.append(f"🟢 {p1} - {p2} ({dias_sin_salir} días invicta)")
         else:
-            # Si salió hoy (0 días), está quemada
             parejas_quemadas += 1
 
-    # Generamos el reporte visual que luego mandaremos a Telegram
     with open('analisis_brujo.txt', 'w', encoding='utf-8') as f:
         f.write("🚨 REPORTE DEL BRUJO 🚨\n")
         f.write(f"📅 Fecha: {fecha_hoy.strftime('%Y-%m-%d %I:%M %p')}\n")
@@ -153,8 +163,9 @@ def validar_teoria_pronostico(df):
 def ejecutar():
     file_name = 'historico_resultados.csv'
     
+    # 1. Forzamos a Pandas a leer 'numero' como string (texto) desde el inicio
     if os.path.exists(file_name):
-        df_historico = pd.read_csv(file_name)
+        df_historico = pd.read_csv(file_name, dtype={'numero': str})
         fechas_ya_descargadas = set(df_historico['fecha'].unique())
     else:
         df_historico = pd.DataFrame(columns=['fecha', 'hora', 'nombre', 'numero'])
@@ -175,6 +186,8 @@ def ejecutar():
         df_nuevos = pd.DataFrame(nuevos_registros)
         df_final = pd.concat([df_historico, df_nuevos])
         
+        # Limpieza antes de guardar
+        df_final['numero'] = df_final['numero'].apply(limpiar_formato_numero)
         df_final = df_final.drop_duplicates(subset=['fecha', 'hora', 'numero'])
         
         df_final['hora_temp'] = pd.to_datetime(df_final['hora'], format='%I:%M %p', errors='coerce').dt.time
@@ -186,6 +199,7 @@ def ejecutar():
         validar_teoria_pronostico(df_final)
     else:
         print("✅ No se detectaron sorteos nuevos para agregar.")
+        # Procesamos el historial existente
         validar_teoria_pronostico(df_historico)
 
 if __name__ == "__main__":
