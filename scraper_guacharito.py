@@ -8,71 +8,46 @@ import time
 
 # --- 1. DICCIONARIO MAESTRO COMPLETO ---
 ANIMALITOS_MASTER = {
-    "0": "DELFIN", "00": "BALLENA", "01": "CARNERO", "02": "TORO", "03": "CIEMPIES",
-    "04": "ALACRAN", "05": "LEON", "06": "RANA", "07": "PERICO", "08": "RATON",
-    "09": "AGUILA", "10": "TIGRE", "11": "GATO", "12": "CABALLO", "13": "MONO",
-    "14": "PALOMA", "15": "ZORRO", "16": "OSO", "17": "PAVO", "18": "BURRO",
-    "19": "CHIVO", "20": "CERDO", "21": "GALLO", "22": "CAMELLO", "23": "CEBRA",
-    "24": "IGUANA", "25": "GALLINA", "26": "VACA", "27": "PERRO", "28": "ZAMURO",
-    "29": "ELEFANTE", "30": "CAIMAN", "31": "LAPA", "32": "ARDILLA", "33": "PESCADO",
-    "34": "VENADO", "35": "JIRAFA", "36": "CULEBRA", "37": "TORTUGA", "38": "BUFALO",
-    "39": "LECHUZA", "40": "AVISPA", "41": "CANGURO", "42": "TUCAN", "43": "MARIPOSA",
-    "44": "CHIGUIRE", "45": "GARZA", "46": "PUMA", "47": "PAVO REAL", "48": "PUERCOESPIN",
-    "49": "PEREZA", "50": "CANARIO", "51": "PELICANO", "52": "PULPO", "53": "CARACOL",
-    "54": "GRILLO", "55": "OSO HORMIGUERO", "56": "TIBURON", "57": "PATO", "58": "HORMIGA",
-    "59": "PANTERA", "60": "CAMALEON", "61": "PANDA", "62": "CACHICAMO", "63": "CANGREJO",
-    "64": "GAVILAN", "65": "ARAÑA", "66": "LOBO", "67": "AVESTRUZ", "68": "JAGUAR",
-    "69": "CONEJO", "70": "BISONTE", "71": "GUACAMAYA", "72": "GORILA", "73": "HIPOPOTAMO",
-    "74": "TURPIAL", "75": "GUACHARO", "76": "RINOCERONTE", "77": "PINGÜINO", "78": "ANTILOPE",
-    "79": "CALAMAR", "80": "MURCIELAGO", "81": "CUERVO", "82": "CUCARACHA", "83": "BUHO",
-    "84": "CAMARON", "85": "HAMSTER", "86": "BUEY", "87": "CABRA", "88": "ERIZO DE MAR",
-    "89": "ANGUILA", "90": "HURON", "91": "MORROCOY", "92": "CISNE", "93": "GAVIOTA",
-    "94": "PAUJIL", "95": "ESCARABAJO", "96": "CABALLITO DE MAR", "97": "LORO",
-    "98": "COCODRILO", "99": "GUACHARITO"
+    "0": "DELFIN", "00": "BALLENA", "01": "CARNERO", "02": "TORO", "03": "CIEMPIES", "04": "ALACRAN", "05": "LEON", "06": "RANA", "07": "PERICO", "08": "RATON",
+    "09": "AGUILA", "10": "TIGRE", "11": "GATO", "12": "CABALLO", "13": "MONO", "14": "PALOMA", "15": "ZORRO", "16": "OSO", "17": "PAVO", "18": "BURRO",
+    "19": "CHIVO", "20": "CERDO", "21": "GALLO", "22": "CAMELLO", "23": "CEBRA", "24": "IGUANA", "25": "GALLINA", "26": "VACA", "27": "PERRO", "28": "ZAMURO",
+    "29": "ELEFANTE", "30": "CAIMAN", "31": "LAPA", "32": "ARDILLA", "33": "PESCADO", "34": "VENADO", "35": "JIRAFA", "36": "CULEBRA", "37": "TORTUGA", "38": "BUFALO",
+    "39": "LECHUZA", "40": "AVISPA", "41": "CANGURO", "42": "TUCAN", "43": "MARIPOSA", "44": "CHIGUIRE", "45": "GARZA", "46": "PUMA", "47": "PAVO REAL", "48": "PUERCOESPIN",
+    "49": "PEREZA", "50": "CANARIO", "51": "PELICANO", "52": "PULPO", "53": "CARACOL", "54": "GRILLO", "55": "OSO HORMIGUERO", "56": "TIBURON", "57": "PATO", "58": "HORMIGA",
+    "59": "PANTERA", "60": "CAMALEON", "61": "PANDA", "62": "CACHICAMO", "63": "CANGREJO", "64": "GAVILAN", "65": "ARAÑA", "66": "LOBO", "67": "AVESTRUZ", "68": "JAGUAR",
+    "69": "CONEJO", "70": "BISONTE", "71": "GUACAMAYA", "72": "GORILA", "73": "HIPOPOTAMO", "74": "TURPIAL", "75": "GUACHARO", "76": "RINOCERONTE", "77": "PINGÜINO", "78": "ANTILOPE",
+    "79": "CALAMAR", "80": "MURCIELAGO", "81": "CUERVO", "82": "CUCARACHA", "83": "BUHO", "84": "CAMARON", "85": "HAMSTER", "86": "BUEY", "87": "CABRA", "88": "ERIZO DE MAR",
+    "89": "ANGUILA", "90": "HURON", "91": "MORROCOY", "92": "CISNE", "93": "GAVIOTA", "94": "PAUJIL", "95": "ESCARABAJO", "96": "CABALLITO DE MAR", "97": "LORO", "98": "COCODRILO", "99": "GUACHARITO"
 }
 
 # --- 2. TABLA DEL BRUJO COMPLETA ---
 TABLA_BRUJO = [
-    ("35", "86"), ("14", "96"), ("02", "46"), ("75", "56"), ("53", "39"), ("37", "52"), 
-    ("48", "67"), ("83", "59"), ("94", "91"), ("63", "70"), ("76", "82"), ("50", "65"), 
-    ("81", "47"), ("78", "62"), ("89", "71"), ("0", "92"), ("28", "61"), ("09", "38"), 
-    ("26", "40"), ("30", "85"), ("11", "69"), ("07", "43"), ("20", "58"), ("32", "41"), 
-    ("17", "88"), ("05", "55"), ("22", "72"), ("34", "49"), ("15", "68"), ("03", "98"), 
-    ("24", "73"), ("36", "80"), ("13", "57"), ("01", "87"), ("00", "90"), ("27", "95"), 
-    ("10", "66"), ("25", "51"), ("29", "44"), ("12", "84"), ("08", "93"), ("19", "64"), 
-    ("31", "42"), ("18", "54"), ("06", "74"), ("21", "97"), ("33", "77"), ("16", "60"), 
-    ("04", "45"), ("23", "79")
+    ("35", "86"), ("14", "96"), ("02", "46"), ("75", "56"), ("53", "39"), ("37", "52"), ("48", "67"), ("83", "59"), ("94", "91"), ("63", "70"), 
+    ("76", "82"), ("50", "65"), ("81", "47"), ("78", "62"), ("89", "71"), ("0", "92"), ("28", "61"), ("09", "38"), ("26", "40"), ("30", "85"), 
+    ("11", "69"), ("07", "43"), ("20", "58"), ("32", "41"), ("17", "88"), ("05", "55"), ("22", "72"), ("34", "49"), ("15", "68"), ("03", "98"), 
+    ("24", "73"), ("36", "80"), ("13", "57"), ("01", "87"), ("00", "90"), ("27", "95"), ("10", "66"), ("25", "51"), ("29", "44"), ("12", "84"), 
+    ("08", "93"), ("19", "64"), ("31", "42"), ("18", "54"), ("06", "74"), ("21", "97"), ("33", "77"), ("16", "60"), ("04", "45"), ("23", "79")
 ]
 
 URL_BASE = "https://loteriadehoy.com/animalito/elguacharitomillonario/resultados/"
 
 def extraer_datos_por_fecha(dias_atras):
-    """Extrae resultados de una fecha específica asegurando la hora real."""
     fecha_dt = datetime.now() - timedelta(days=dias_atras)
     fecha_str = fecha_dt.strftime('%Y-%m-%d')
-    
-    if dias_atras == 0:
-        url = URL_BASE
-    elif dias_atras == 1:
-        url = f"{URL_BASE}ayer/"
-    else:
-        url = f"{URL_BASE}{fecha_str}/"
+    url = URL_BASE if dias_atras == 0 else (f"{URL_BASE}ayer/" if dias_atras == 1 else f"{URL_BASE}{fecha_str}/")
     
     print(f"Consultando sorteos del día: {fecha_str} en {url}")
     try:
         headers = {'User-Agent': 'Mozilla/5.0'}
         r = requests.get(url, headers=headers, timeout=20)
         soup = BeautifulSoup(r.text, 'html.parser')
-        
         resultados_dia = []
-        
         nodos_hora = soup.find_all(string=re.compile(r'\d{1,2}:\d{2}\s*(?:AM|PM)', re.IGNORECASE))
         
         for nodo in nodos_hora:
             padre = nodo.parent.parent
             if padre:
                 texto_bloque = padre.get_text(separator=' ', strip=True).upper()
-                
                 match_animal = re.search(r'\b(\d{1,2})\s+([A-ZÁÉÍÓÚÑ]+)\b', texto_bloque)
                 match_hora = re.search(r'(\d{1,2}:\d{2}\s*(?:AM|PM))', texto_bloque)
                 
@@ -82,88 +57,90 @@ def extraer_datos_por_fecha(dias_atras):
                     hora = match_hora.group(1)
                     
                     if num in ANIMALITOS_MASTER and ANIMALITOS_MASTER[num] == nombre:
-                        resultados_dia.append({
-                            "fecha": fecha_str,
-                            "hora": hora,
-                            "nombre": nombre,
-                            "numero": num
-                        })
+                        resultados_dia.append({"fecha": fecha_str, "hora": hora, "nombre": nombre, "numero": num})
         return resultados_dia
     except Exception as e:
         print(f"Error accediendo a {url}: {e}")
         return []
 
 def limpiar_formato_numero(x):
-    """Fuerza a que los números se mantengan en su formato original de texto (00, 0, 35)."""
     val = str(x).strip()
-    if val.endswith('.0'): # Por si Pandas lo convirtió en float
-        val = val[:-2]
-    if val in ["0", "00"]:
-        return val
+    if val.endswith('.0'): val = val[:-2]
+    if val in ["0", "00"]: return val
     return val.zfill(2)
 
-def validar_teoria_pronostico(df):
-    """Verifica la Tabla del Brujo y genera el Semáforo de Probabilidades."""
-    print("--- Generando Análisis del Semáforo del Brujo ---")
+def enviar_mensaje_telegram(mensaje):
+    """Envía el reporte final directamente a tu Telegram."""
+    token = os.environ.get('TELEGRAM_TOKEN')
+    chat_id = os.environ.get('TELEGRAM_CHAT_ID')
     
-    # Blindaje de Datos: Aseguramos fechas y forzamos que 'numero' sea texto exacto
+    if not token or not chat_id:
+        print("⚠️ Variables de Telegram no encontradas. Saltando envío.")
+        return
+        
+    url = f"https://api.telegram.org/bot{token}/sendMessage"
+    payload = {
+        'chat_id': chat_id,
+        'text': mensaje,
+        'parse_mode': 'HTML' # Permite usar negritas y emojis bonitos
+    }
+    
+    try:
+        response = requests.post(url, data=payload)
+        if response.status_code == 200:
+            print("✅ ¡Reporte enviado exitosamente a Telegram!")
+        else:
+            print(f"⚠️ Error enviando a Telegram: {response.text}")
+    except Exception as e:
+        print(f"⚠️ Fallo de conexión con Telegram: {e}")
+
+def validar_teoria_pronostico(df):
+    print("--- Generando Análisis del Semáforo del Brujo ---")
     df['fecha'] = pd.to_datetime(df['fecha'])
     df['numero'] = df['numero'].apply(limpiar_formato_numero)
-    
     fecha_hoy = datetime.now()
-    
-    # Agrupamos por número estricto para buscar la última fecha que salió
     ultimas_salidas = df.groupby('numero')['fecha'].max()
     
-    parejas_rojas = []     # +15 días sin salir
-    parejas_amarillas = [] # 7 a 14 días sin salir
-    parejas_verdes = []    # 1 a 6 días sin salir
+    parejas_rojas, parejas_amarillas, parejas_verdes = [], [], []
     parejas_quemadas = 0   
     
     for p1, p2 in TABLA_BRUJO:
-        # Buscamos en el diccionario, si no existe usamos 999 como comodín de que nunca ha salido
         fecha_p1 = ultimas_salidas.get(p1, fecha_hoy - timedelta(days=999))
         fecha_p2 = ultimas_salidas.get(p2, fecha_hoy - timedelta(days=999))
-        
-        dias_p1 = (fecha_hoy - fecha_p1).days
-        dias_p2 = (fecha_hoy - fecha_p2).days
-        
-        # Tomamos el número que salió MÁS RECIENTEMENTE para definir la pareja
-        dias_sin_salir = min(dias_p1, dias_p2)
+        dias_sin_salir = min((fecha_hoy - fecha_p1).days, (fecha_hoy - fecha_p2).days)
         
         if dias_sin_salir >= 15:
-            # Filtramos para no mostrar los 999 si es que tu CSV aún no tiene suficiente data histórica
             dias_mostrar = "Más de 30" if dias_sin_salir == 999 else dias_sin_salir
-            parejas_rojas.append(f"🔴 {p1} - {p2} ({dias_mostrar} días invicta)")
+            parejas_rojas.append(f"🔴 <b>{p1} - {p2}</b> ({dias_mostrar} días)")
         elif 7 <= dias_sin_salir <= 14:
-            parejas_amarillas.append(f"🟡 {p1} - {p2} ({dias_sin_salir} días invicta)")
+            parejas_amarillas.append(f"🟡 {p1} - {p2} ({dias_sin_salir} días)")
         elif 1 <= dias_sin_salir <= 6:
-            parejas_verdes.append(f"🟢 {p1} - {p2} ({dias_sin_salir} días invicta)")
+            parejas_verdes.append(f"🟢 {p1} - {p2} ({dias_sin_salir} días)")
         else:
             parejas_quemadas += 1
 
+    # Construimos el texto del mensaje
+    mensaje = f"🚨 <b>REPORTE DEL BRUJO</b> 🚨\n"
+    mensaje += f"📅 Fecha: {fecha_hoy.strftime('%Y-%m-%d %I:%M %p')}\n"
+    mensaje += f"🔥 Descartadas hoy: {parejas_quemadas} de 50\n"
+    mensaje += "➖➖➖➖➖➖➖➖➖➖\n\n"
+    
+    if parejas_rojas:
+        mensaje += "🎯 <b>ALERTA ROJA (JUGAR FUERTE)</b>\n" + '\n'.join(parejas_rojas) + "\n\n"
+    if parejas_amarillas:
+        mensaje += "⚠️ <b>ALERTA AMARILLA (OBSERVAR)</b>\n" + '\n'.join(parejas_amarillas) + "\n\n"
+    if parejas_verdes:
+        mensaje += "✅ <b>ALERTA VERDE (FRÍAS)</b>\n" + '\n'.join(parejas_verdes) + "\n"
+
+    # Guardamos el archivo y además lo enviamos a Telegram
     with open('analisis_brujo.txt', 'w', encoding='utf-8') as f:
-        f.write("🚨 REPORTE DEL BRUJO 🚨\n")
-        f.write(f"📅 Fecha: {fecha_hoy.strftime('%Y-%m-%d %I:%M %p')}\n")
-        f.write(f"🔥 Parejas Quemadas (Descartadas hoy): {parejas_quemadas} de 50\n")
-        f.write("="*30 + "\n\n")
+        # Quitamos las etiquetas HTML <b> para el archivo de texto simple
+        f.write(mensaje.replace('<b>', '').replace('</b>', ''))
         
-        if parejas_rojas:
-            f.write("🎯 ALERTA ROJA (JUGAR FUERTE - MÁXIMA PROBABILIDAD)\n")
-            f.writelines('\n'.join(parejas_rojas) + '\n\n')
-            
-        if parejas_amarillas:
-            f.write("⚠️ ALERTA AMARILLA (EN OBSERVACIÓN)\n")
-            f.writelines('\n'.join(parejas_amarillas) + '\n\n')
-            
-        if parejas_verdes:
-            f.write("✅ ALERTA VERDE (FRÍAS - SALIERON RECIENTE)\n")
-            f.writelines('\n'.join(parejas_verdes) + '\n')
+    enviar_mensaje_telegram(mensaje)
 
 def ejecutar():
     file_name = 'historico_resultados.csv'
-    
-    # 1. Forzamos a Pandas a leer 'numero' como string (texto) desde el inicio
     if os.path.exists(file_name):
         df_historico = pd.read_csv(file_name, dtype={'numero': str})
         fechas_ya_descargadas = set(df_historico['fecha'].unique())
@@ -172,34 +149,25 @@ def ejecutar():
         fechas_ya_descargadas = set()
 
     nuevos_registros = []
-    
     for i in range(366):
         fecha_evaluar = (datetime.now() - timedelta(days=i)).strftime('%Y-%m-%d')
-        
         if i == 0 or fecha_evaluar not in fechas_ya_descargadas:
             datos_dia = extraer_datos_por_fecha(i)
-            if datos_dia:
-                nuevos_registros.extend(datos_dia)
+            if datos_dia: nuevos_registros.extend(datos_dia)
             time.sleep(1)
 
     if nuevos_registros:
         df_nuevos = pd.DataFrame(nuevos_registros)
         df_final = pd.concat([df_historico, df_nuevos])
-        
-        # Limpieza antes de guardar
         df_final['numero'] = df_final['numero'].apply(limpiar_formato_numero)
         df_final = df_final.drop_duplicates(subset=['fecha', 'hora', 'numero'])
-        
         df_final['hora_temp'] = pd.to_datetime(df_final['hora'], format='%I:%M %p', errors='coerce').dt.time
         df_final = df_final.sort_values(by=['fecha', 'hora_temp'], ascending=[False, False]).drop(columns=['hora_temp'])
-        
         df_final.to_csv(file_name, index=False)
         print(f"✅ Archivo CSV actualizado. Total de registros: {len(df_final)}")
-        
         validar_teoria_pronostico(df_final)
     else:
         print("✅ No se detectaron sorteos nuevos para agregar.")
-        # Procesamos el historial existente
         validar_teoria_pronostico(df_historico)
 
 if __name__ == "__main__":
