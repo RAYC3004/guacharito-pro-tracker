@@ -1,11 +1,14 @@
 🚨 REPORTE DEL BRUJO 🚨
-📅 Fecha: 2026-03-25 02:02 AM
-🔥 Parejas Quemadas (Descartadas hoy): 10 de 50
+📅 Fecha: 2026-03-25 04:32 AM
+🔥 Parejas Quemadas (Descartadas hoy): 0 de 50
 ==============================
 
 🎯 ALERTA ROJA (JUGAR FUERTE - MÁXIMA PROBABILIDAD)
 🔴 35 - 86 (999 días invicta)
+🔴 14 - 96 (999 días invicta)
+🔴 02 - 46 (999 días invicta)
 🔴 75 - 56 (999 días invicta)
+🔴 53 - 39 (999 días invicta)
 🔴 37 - 52 (999 días invicta)
 🔴 48 - 67 (999 días invicta)
 🔴 83 - 59 (999 días invicta)
@@ -20,6 +23,7 @@
 🔴 28 - 61 (999 días invicta)
 🔴 09 - 38 (999 días invicta)
 🔴 26 - 40 (999 días invicta)
+🔴 30 - 85 (999 días invicta)
 🔴 11 - 69 (999 días invicta)
 🔴 07 - 43 (999 días invicta)
 🔴 20 - 58 (999 días invicta)
@@ -31,6 +35,7 @@
 🔴 15 - 68 (999 días invicta)
 🔴 03 - 98 (999 días invicta)
 🔴 24 - 73 (999 días invicta)
+🔴 36 - 80 (999 días invicta)
 🔴 13 - 57 (999 días invicta)
 🔴 01 - 87 (999 días invicta)
 🔴 00 - 90 (999 días invicta)
@@ -38,7 +43,12 @@
 🔴 10 - 66 (999 días invicta)
 🔴 25 - 51 (999 días invicta)
 🔴 29 - 44 (999 días invicta)
+🔴 12 - 84 (999 días invicta)
+🔴 08 - 93 (999 días invicta)
+🔴 19 - 64 (999 días invicta)
+🔴 31 - 42 (999 días invicta)
 🔴 18 - 54 (999 días invicta)
+🔴 06 - 74 (999 días invicta)
 🔴 21 - 97 (999 días invicta)
 🔴 33 - 77 (999 días invicta)
 🔴 16 - 60 (999 días invicta)
