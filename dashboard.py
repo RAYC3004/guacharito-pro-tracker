@@ -38,15 +38,13 @@ st.set_page_config(
 # --- FUNCIONES TÉCNICAS ---
 
 def limpiar_formato_numero(x):
-    """Fuerza a que los números se mantengan en su formato original de texto (00, 0, 35)."""
     val = str(x).strip()
     if val.endswith('.0'): val = val[:-2]
     if val in ["0", "00"]: return val
     return val.zfill(2)
 
-@st.cache_data(ttl=1800) # Caché por 30 minutos
+@st.cache_data(ttl=1800) 
 def cargar_datos_raw():
-    """Descarga y limpia la base de datos CSV desde la URL Raw de GitHub."""
     try:
         response = requests.get(URL_BASE_DATOS_RAW, timeout=15)
         response.raise_for_status()
@@ -59,11 +57,10 @@ def cargar_datos_raw():
         
         return df
     except Exception as e:
-        st.error(f"Error cargando la base de datos. Asegúrate de que el repositorio sea público o el token sea válido. Detalle: {e}")
+        st.error(f"Error cargando la base de datos. Asegúrate de que el repositorio sea público. Detalle: {e}")
         return pd.DataFrame()
 
 def clasificar_semoforo(df):
-    """Calcula el Semáforo del Brujo."""
     fecha_hoy = datetime.now()
     ultimas_salidas = df.groupby('numero')['fecha'].max()
     
@@ -104,11 +101,10 @@ with st.spinner("Sincronizando con la base de datos del Brujo..."):
     df = cargar_datos_raw()
 
 if df.empty:
-    st.error("No se pudo cargar el historial de resultados. Si tu repositorio de GitHub es 'Privado', la web pública no podrá leer el archivo CSV directamente.")
+    st.error("No se pudo cargar el historial de resultados.")
     st.stop()
 
-# Filtro lateral de fecha
-st.sidebar.image("https://cdn-icons-png.flaticon.com/512/186/186318.png", width=100) # Un icono genérico de bola de cristal
+st.sidebar.image("https://cdn-icons-png.flaticon.com/512/186/186318.png", width=100) 
 st.sidebar.header("Filtros de Análisis")
 fecha_rango = st.sidebar.date_input(
     "Rango de Análisis Estadístico",
@@ -125,11 +121,12 @@ df_roja, df_amarilla, df_verde, quemadas = clasificar_semoforo(df)
 
 col1, col2, col3 = st.columns(3)
 
+# AQUI ESTÁ LA CORRECCIÓN: Usamos st.markdown en lugar de st.write y con el parámetro correcto
 with col1:
     st.subheader("🎯 ALERTA ROJA")
     st.markdown("*Jugar Fuerte (+14 días invicta)*")
     if not df_roja.empty:
-        st.write(df_roja.to_html(index=False, escape=False, classes='table table-striped'), unsafe_allow_with_with_with_with=True)
+        st.markdown(df_roja.to_html(index=False, escape=False, classes='table table-striped'), unsafe_allow_html=True)
     else:
         st.success("Sin alertas rojas hoy.")
 
@@ -137,7 +134,7 @@ with col2:
     st.subheader("⚠️ ALERTA AMARILLA")
     st.markdown("*En Observación (7 a 14 días)*")
     if not df_amarilla.empty:
-        st.write(df_amarilla.to_html(index=False, escape=False, classes='table table-striped'), unsafe_allow_with_with_with_with=True)
+        st.markdown(df_amarilla.to_html(index=False, escape=False, classes='table table-striped'), unsafe_allow_html=True)
     else:
         st.info("Sin alertas amarillas.")
 
@@ -145,7 +142,7 @@ with col3:
     st.subheader("✅ ALERTA VERDE")
     st.markdown("*Frías - Recientes (1 a 6 días)*")
     if not df_verde.empty:
-        st.write(df_verde.to_html(index=False, escape=False, classes='table table-striped'), unsafe_allow_with_with_with_with=True)
+        st.markdown(df_verde.to_html(index=False, escape=False, classes='table table-striped'), unsafe_allow_html=True)
     else:
         st.info("Sin alertas verdes.")
 
