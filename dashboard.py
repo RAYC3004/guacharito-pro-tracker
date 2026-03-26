@@ -13,7 +13,7 @@ import io
 # ==========================================
 
 # Remplaza esto con tus datos reales para que Streamlit pueda encontrar tu base de datos
-TU_USUARIO_GITHUB = "TU_USUARIO_GITHUB_AQUI"
+TU_USUARIO_GITHUB = "RAYC3004"
 TU_REPOSITORIO_GITHUB = "guacharito-pro-tracker"
 URL_BASE_DATOS_RAW = f"https://raw.githubusercontent.com/{TU_USUARIO_GITHUB}/{TU_REPOSITORIO_GITHUB}/main/historico_resultados.csv"
 
