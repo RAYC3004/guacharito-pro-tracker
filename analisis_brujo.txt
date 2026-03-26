@@ -1,6 +1,6 @@
 🚨 REPORTE DEL BRUJO 🚨
-📅 Fecha: 2026-03-26 02:04 PM
-🔥 Descartadas hoy: 12 de 50
+📅 Fecha: 2026-03-26 03:51 PM
+🔥 Descartadas hoy: 14 de 50
 ➖➖➖➖➖➖➖➖➖➖
 
 ⚠️ ALERTA AMARILLA (OBSERVAR)
@@ -19,7 +19,6 @@
 
 ✅ ALERTA VERDE (FRÍAS)
 🟢 14 - 96 (1 días)
-🟢 02 - 46 (1 días)
 🟢 37 - 52 (4 días)
 🟢 94 - 91 (3 días)
 🟢 63 - 70 (4 días)
@@ -29,7 +28,6 @@
 🟢 28 - 61 (4 días)
 🟢 09 - 38 (5 días)
 🟢 26 - 40 (4 días)
-🟢 30 - 85 (1 días)
 🟢 11 - 69 (3 días)
 🟢 17 - 88 (5 días)
 🟢 03 - 98 (5 días)
