@@ -151,17 +151,23 @@ st.write("---")
 # --- 3. ANÁLISIS ESTADÍSTICO INTERACTIVO ---
 st.header("📈 Análisis Estadístico Interactivo")
 
-# AQUI ESTÁ LA CORRECCIÓN: .dt.date
-df_filtrado = df[
-    (df['fecha'].dt.date >= fecha_rango[0]) &
-    (df['fecha'].dt.date <= fecha_rango[1])
-]
+# BLINDAJE DE SEGURIDAD PARA EL RANGO DE FECHAS
+if len(fecha_rango) == 2:
+    start_date, end_date = fecha_rango
+    df_filtrado = df[
+        (df['fecha'].dt.date >= start_date) &
+        (df['fecha'].dt.date <= end_date)
+    ]
+else:
+    st.warning("⏳ Por favor, selecciona una fecha de inicio y una de fin en el menú lateral para ver los gráficos.")
+    df_filtrado = pd.DataFrame()
 
 # A) Gráfico de Frecuencia de Animalitos
 st.subheader("📊 Frecuencia de Animalitos (+ Salidores)")
 
 if not df_filtrado.empty:
-    frecuencia_animal = df_filtrado['nombre'].value_count().reset_index()
+    # CORRECCIÓN: value_counts() en lugar de value_count()
+    frecuencia_animal = df_filtrado['nombre'].value_counts().reset_index()
     frecuencia_animal.columns = ['Animalito', 'Veces que Salió']
     
     fig_frec = px.bar(
@@ -177,8 +183,8 @@ if not df_filtrado.empty:
     )
     fig_frec.update_layout(yaxis={'categoryorder':'total ascending'})
     st.plotly_chart(fig_frec, use_container_width=True)
-else:
-    st.warning("No hay datos en el rango de fechas seleccionado.")
+elif len(fecha_rango) == 2: # Solo muestra la alerta si hay 2 fechas seleccionadas pero no hay data
+    st.info("No hay sorteos registrados en este rango de fechas.")
 
 st.write("---")
 
@@ -201,8 +207,6 @@ if not df_filtrado.empty:
         color_continuous_scale='Reds' 
     )
     st.plotly_chart(fig_hora, use_container_width=True)
-else:
-    st.warning("No hay datos en el rango de fechas seleccionado.")
 
 st.write("---")
 st.markdown("<div style='text-align: center; color: gray;'><em>Automatizado por El Brujo Guacharito - 2026</em></div>", unsafe_allow_html=True)
