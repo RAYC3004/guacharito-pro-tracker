@@ -5,6 +5,7 @@ import os
 import re
 from datetime import datetime, timedelta
 import time
+import google.generativeai as genai
 
 # --- 1. DICCIONARIO MAESTRO COMPLETO ---
 ANIMALITOS_MASTER = {
@@ -36,7 +37,6 @@ def extraer_datos_por_fecha(dias_atras):
     fecha_str = fecha_dt.strftime('%Y-%m-%d')
     url = URL_BASE if dias_atras == 0 else (f"{URL_BASE}ayer/" if dias_atras == 1 else f"{URL_BASE}{fecha_str}/")
     
-    print(f"Consultando sorteos del día: {fecha_str} en {url}")
     try:
         headers = {'User-Agent': 'Mozilla/5.0'}
         r = requests.get(url, headers=headers, timeout=20)
@@ -60,7 +60,6 @@ def extraer_datos_por_fecha(dias_atras):
                         resultados_dia.append({"fecha": fecha_str, "hora": hora, "nombre": nombre, "numero": num})
         return resultados_dia
     except Exception as e:
-        print(f"Error accediendo a {url}: {e}")
         return []
 
 def limpiar_formato_numero(x):
@@ -69,33 +68,38 @@ def limpiar_formato_numero(x):
     if val in ["0", "00"]: return val
     return val.zfill(2)
 
-def enviar_mensaje_telegram(mensaje):
-    """Envía el reporte final directamente a tu Telegram."""
-    token = os.environ.get('TELEGRAM_TOKEN')
-    chat_id = os.environ.get('TELEGRAM_CHAT_ID')
-    
-    if not token or not chat_id:
-        print("⚠️ Variables de Telegram no encontradas. Saltando envío.")
-        return
-        
-    url = f"https://api.telegram.org/bot{token}/sendMessage"
-    payload = {
-        'chat_id': chat_id,
-        'text': mensaje,
-        'parse_mode': 'HTML' # Permite usar negritas y emojis bonitos
-    }
+def generar_consejo_ia():
+    """Conecta con Gemini para crear el mensaje místico diario."""
+    api_key = os.environ.get("GEMINI_API_KEY")
+    if not api_key:
+        return "🔮 <i>Los astros están en silencio hoy, pero los números no mienten. ¡A ganar!</i>"
     
     try:
-        response = requests.post(url, data=payload)
-        if response.status_code == 200:
-            print("✅ ¡Reporte enviado exitosamente a Telegram!")
-        else:
-            print(f"⚠️ Error enviando a Telegram: {response.text}")
+        genai.configure(api_key=api_key)
+        model = genai.GenerativeModel('gemini-1.5-flash')
+        prompt = "Actúa como el místico Brujo Guacharito, un experto en lotería de animalitos venezolana. Escribe un consejo corto, enigmático y muy motivador (máximo 2 líneas) para mis seguidores que jugarán hoy. Usa un par de emojis relacionados a la suerte o magia. No pongas saludos largos, ve directo al consejo."
+        respuesta = model.generate_content(prompt)
+        
+        mensaje_magico = respuesta.text.strip()
+        
+        # Guardar el mensaje para que la web lo lea
+        with open('mensaje_brujo.txt', 'w', encoding='utf-8') as f:
+            f.write(mensaje_magico)
+            
+        return f"🔮 <b>LA VOZ DEL BRUJO:</b>\n<i>\"{mensaje_magico}\"</i>\n"
     except Exception as e:
-        print(f"⚠️ Fallo de conexión con Telegram: {e}")
+        return "🔮 <i>La energía está concentrada en los números. Sigue la tabla.</i>"
+
+def enviar_mensaje_telegram(mensaje):
+    token = os.environ.get('TELEGRAM_TOKEN')
+    chat_id = os.environ.get('TELEGRAM_CHAT_ID')
+    if not token or not chat_id: return
+        
+    url = f"https://api.telegram.org/bot{token}/sendMessage"
+    payload = {'chat_id': chat_id, 'text': mensaje, 'parse_mode': 'HTML'}
+    requests.post(url, data=payload)
 
 def validar_teoria_pronostico(df):
-    print("--- Generando Análisis del Semáforo del Brujo ---")
     df['fecha'] = pd.to_datetime(df['fecha'])
     df['numero'] = df['numero'].apply(limpiar_formato_numero)
     fecha_hoy = datetime.now()
@@ -119,11 +123,15 @@ def validar_teoria_pronostico(df):
         else:
             parejas_quemadas += 1
 
-    # Construimos el texto del mensaje
+    # --- INTEGRAMOS LA IA AQUÍ ---
+    mensaje_ia = generar_consejo_ia()
+
     mensaje = f"🚨 <b>REPORTE DEL BRUJO</b> 🚨\n"
     mensaje += f"📅 Fecha: {fecha_hoy.strftime('%Y-%m-%d %I:%M %p')}\n"
-    mensaje += f"🔥 Descartadas hoy: {parejas_quemadas} de 50\n"
+    mensaje += "➖➖➖➖➖➖➖➖➖➖\n"
+    mensaje += f"{mensaje_ia}\n" # El texto dinámico aparece aquí
     mensaje += "➖➖➖➖➖➖➖➖➖➖\n\n"
+    mensaje += f"🔥 Descartadas hoy: {parejas_quemadas} de 50\n\n"
     
     if parejas_rojas:
         mensaje += "🎯 <b>ALERTA ROJA (JUGAR FUERTE)</b>\n" + '\n'.join(parejas_rojas) + "\n\n"
@@ -132,10 +140,8 @@ def validar_teoria_pronostico(df):
     if parejas_verdes:
         mensaje += "✅ <b>ALERTA VERDE (FRÍAS)</b>\n" + '\n'.join(parejas_verdes) + "\n"
 
-    # Guardamos el archivo y además lo enviamos a Telegram
     with open('analisis_brujo.txt', 'w', encoding='utf-8') as f:
-        # Quitamos las etiquetas HTML <b> para el archivo de texto simple
-        f.write(mensaje.replace('<b>', '').replace('</b>', ''))
+        f.write(mensaje.replace('<b>', '').replace('</b>', '').replace('<i>', '').replace('</i>', ''))
         
     enviar_mensaje_telegram(mensaje)
 
@@ -164,10 +170,8 @@ def ejecutar():
         df_final['hora_temp'] = pd.to_datetime(df_final['hora'], format='%I:%M %p', errors='coerce').dt.time
         df_final = df_final.sort_values(by=['fecha', 'hora_temp'], ascending=[False, False]).drop(columns=['hora_temp'])
         df_final.to_csv(file_name, index=False)
-        print(f"✅ Archivo CSV actualizado. Total de registros: {len(df_final)}")
         validar_teoria_pronostico(df_final)
     else:
-        print("✅ No se detectaron sorteos nuevos para agregar.")
         validar_teoria_pronostico(df_historico)
 
 if __name__ == "__main__":
