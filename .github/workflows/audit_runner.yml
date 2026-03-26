@@ -13,10 +13,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout del Repositorio
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4 # ACTUALIZADO A v4
 
       - name: Configurar Entorno Python
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v5 # ACTUALIZADO A v5
         with:
           python-version: '3.9'
 
