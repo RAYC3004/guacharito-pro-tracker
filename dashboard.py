@@ -121,7 +121,6 @@ df_roja, df_amarilla, df_verde, quemadas = clasificar_semoforo(df)
 
 col1, col2, col3 = st.columns(3)
 
-# AQUI ESTÁ LA CORRECCIÓN: Usamos st.markdown en lugar de st.write y con el parámetro correcto
 with col1:
     st.subheader("🎯 ALERTA ROJA")
     st.markdown("*Jugar Fuerte (+14 días invicta)*")
@@ -152,9 +151,10 @@ st.write("---")
 # --- 3. ANÁLISIS ESTADÍSTICO INTERACTIVO ---
 st.header("📈 Análisis Estadístico Interactivo")
 
+# AQUI ESTÁ LA CORRECCIÓN: .dt.date
 df_filtrado = df[
-    (df['fecha'].date >= fecha_rango[0]) &
-    (df['fecha'].date <= fecha_rango[1])
+    (df['fecha'].dt.date >= fecha_rango[0]) &
+    (df['fecha'].dt.date <= fecha_rango[1])
 ]
 
 # A) Gráfico de Frecuencia de Animalitos
