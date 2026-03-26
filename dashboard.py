@@ -96,6 +96,15 @@ def clasificar_semoforo(df):
 st.title("🔮 El Brujo Guacharito - Pronósticos Exclusivos")
 st.markdown(f"**Última actualización:** {datetime.now().strftime('%d-%m-%Y %I:%M %p')} | *Datos sincronizados en tiempo real*")
 
+# --- LECTURA DEL MENSAJE DE LA IA ---
+URL_MENSAJE_RAW = f"https://raw.githubusercontent.com/{TU_USUARIO_GITHUB}/{TU_REPOSITORIO_GITHUB}/main/mensaje_brujo.txt"
+try:
+    req_msj = requests.get(URL_MENSAJE_RAW, timeout=5)
+    if req_msj.status_code == 200 and req_msj.text.strip():
+        st.info(f"**LA VOZ DEL BRUJO:**\n\n*{req_msj.text.strip()}*")
+except:
+    pass # Si no hay mensaje, simplemente no muestra nada
+
 # --- 1. CARGA Y FILTROS ---
 with st.spinner("Sincronizando con la base de datos del Brujo..."):
     df = cargar_datos_raw()
