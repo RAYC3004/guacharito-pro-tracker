@@ -26,23 +26,26 @@ def ejecutar_auditoria():
 
     # Leer datos y limpiar
     df = pd.read_csv(file_name, dtype={'numero': str})
-    df['fecha'] = pd.to_datetime(df['fecha'])
+    
+    # --- LA CORRECCIÓN: Le decimos explícitamente que acepte formatos mixtos ---
+    df['fecha'] = pd.to_datetime(df['fecha'], format='mixed', errors='coerce')
+    
     df['numero'] = df['numero'].apply(limpiar_formato_numero)
     
     # Ordenar cronológicamente (del más antiguo al más nuevo)
     df = df.sort_values('fecha')
     
     alertas_generadas = 0
-    aciertos_rapidos = 0 # Salió entre 1 y 3 días después de la alerta
-    aciertos_medios = 0  # Salió entre 4 y 7 días después
-    aciertos_lentos = 0  # Tardó más de 7 días en salir
+    aciertos_rapidos = 0 
+    aciertos_medios = 0  
+    aciertos_lentos = 0  
     
     for p1, p2 in TABLA_BRUJO:
         # Filtrar solo los días donde salió esta pareja específica
-        fechas_pareja = df[df['numero'].isin([p1, p2])]['fecha'].drop_duplicates().tolist()
+        fechas_pareja = df[df['numero'].isin([p1, p2])]['fecha'].dropna().drop_duplicates().tolist()
         
         if len(fechas_pareja) < 2:
-            continue # No hay suficiente historial para esta pareja aún
+            continue 
 
         # Medir la distancia en días entre cada vez que salió
         for i in range(1, len(fechas_pareja)):
@@ -69,7 +72,7 @@ def ejecutar_auditoria():
         f.write("="*50 + "\n\n")
         
         if alertas_generadas == 0:
-            f.write("⚠️ Aún no hay suficientes datos históricos para generar alertas rojas pasadas. Deja que el sistema recopile más días.\n")
+            f.write("⚠️ Aún no hay suficientes datos históricos para generar alertas rojas pasadas.\n")
         else:
             f.write(f"🔍 Total de 'Alertas Rojas' históricas detectadas: {alertas_generadas}\n\n")
             f.write("¿Cuánto tardaron en salir DESPUÉS de entrar en Alerta Roja?\n")
@@ -81,7 +84,7 @@ def ejecutar_auditoria():
             if (aciertos_rapidos + aciertos_medios) > (alertas_generadas / 2):
                 f.write("✅ ESTRATEGIA SÓLIDA: Más del 50% de las alertas rojas salen en la primera semana. Es rentable usar la técnica de 'perseguir' el número subiendo la apuesta.\n")
             else:
-                f.write("⚠️ ESTRATEGIA DE RIESGO: Muchas alertas tardan más de una semana en salir. Se sugiere cambiar el umbral de la Alerta Roja a 20 días para mayor seguridad financiera.\n")
+                f.write("⚠️ ESTRATEGIA DE RIESGO: Muchas alertas tardan más de una semana en salir.\n")
 
 if __name__ == '__main__':
     ejecutar_auditoria()
