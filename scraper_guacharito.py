@@ -68,20 +68,25 @@ def limpiar_formato_numero(x):
     if val in ["0", "00"]: return val
     return val.zfill(2)
 
-def generar_consejo_ia():
+def generar_consejo_ia(rojas, amarillas, verdes):
+    """Genera un consejo basado en los datos reales del sorteo de hoy."""
     api_key = os.environ.get("GEMINI_API_KEY")
     mensaje_respaldo = "La energía está concentrada en los números. Sigue la tabla."
     
     if not api_key:
-        print("⚠️ No se encontró GEMINI_API_KEY en los secretos.")
         with open('mensaje_brujo.txt', 'w', encoding='utf-8') as f:
             f.write(mensaje_respaldo)
-        return f"🔮 <b>LA VOZ DEL BRUJO:</b>\n<i>\"{mensaje_respaldo}\"</i>\n"
+        return f"🔮 <b>ANÁLISIS ESTRATÉGICO:</b>\n<i>\"{mensaje_respaldo}\"</i>\n"
     
+    # Extraer las mejores parejas para dárselas a la IA
+    top_rojas = ", ".join([r.split('</b>')[0].replace('🔴 <b>', '') for r in rojas[:3]]) if rojas else "Ninguna"
+    top_amarillas = ", ".join([a.split(' (')[0].replace('🟡 ', '') for a in amarillas[:3]]) if amarillas else "Ninguna"
+    
+    contexto_datos = f"Alertas Rojas actuales (Más de 15 días sin salir, altísima probabilidad): {top_rojas}. Alertas Amarillas (calentando): {top_amarillas}. Total de parejas frías/descartadas: {len(verdes)}."
+
     try:
-        # Usamos la nueva librería oficial de Google GenAI
         client = genai.Client(api_key=api_key)
-        prompt = "Actúa como el místico Brujo Guacharito, un experto en lotería de animalitos venezolana. Escribe un consejo corto, enigmático y muy motivador (máximo 2 líneas) para mis seguidores que jugarán hoy. Usa un par de emojis relacionados a la suerte o magia. No pongas saludos largos, ve directo al consejo."
+        prompt = f"Actúa como el Brujo Guacharito, un experto analista estadístico de lotería. Basado ESTRICTAMENTE en estos datos de hoy: '{contexto_datos}', escribe una recomendación estratégica de máximo 2 líneas. Dile a los jugadores en qué parejas enfocarse hoy y cuáles ignorar. Sé directo, persuasivo y usa un par de emojis. No uses saludos."
         
         respuesta = client.models.generate_content(
             model='gemini-2.5-flash',
@@ -93,12 +98,12 @@ def generar_consejo_ia():
         with open('mensaje_brujo.txt', 'w', encoding='utf-8') as f:
             f.write(mensaje_magico)
             
-        return f"🔮 <b>LA VOZ DEL BRUJO:</b>\n<i>\"{mensaje_magico}\"</i>\n"
+        return f"📊 <b>ANÁLISIS ESTRATÉGICO:</b>\n<i>\"{mensaje_magico}\"</i>\n"
     except Exception as e:
         print(f"⚠️ Error conectando con la IA de Gemini: {e}")
         with open('mensaje_brujo.txt', 'w', encoding='utf-8') as f:
             f.write(mensaje_respaldo)
-        return f"🔮 <b>LA VOZ DEL BRUJO:</b>\n<i>\"{mensaje_respaldo}\"</i>\n"
+        return f"📊 <b>ANÁLISIS ESTRATÉGICO:</b>\n<i>\"{mensaje_respaldo}\"</i>\n"
 
 def enviar_mensaje_telegram(mensaje):
     token = os.environ.get('TELEGRAM_TOKEN')
@@ -133,7 +138,8 @@ def validar_teoria_pronostico(df):
         else:
             parejas_quemadas += 1
 
-    mensaje_ia = generar_consejo_ia()
+    # --- LE PASAMOS LOS DATOS A LA IA ---
+    mensaje_ia = generar_consejo_ia(parejas_rojas, parejas_amarillas, parejas_verdes)
 
     mensaje = f"🚨 <b>REPORTE DEL BRUJO</b> 🚨\n"
     mensaje += f"📅 Fecha: {fecha_hoy.strftime('%Y-%m-%d %I:%M %p')}\n"
