@@ -7,7 +7,7 @@ from datetime import datetime, timedelta
 import time
 from google import genai
 
-# --- 1. DICCIONARIO MAESTRO COMPLETO ---
+# --- 1. DICCIONARIO MAESTRO ---
 ANIMALITOS_MASTER = {
     "0": "DELFIN", "00": "BALLENA", "01": "CARNERO", "02": "TORO", "03": "CIEMPIES", "04": "ALACRAN", "05": "LEON", "06": "RANA", "07": "PERICO", "08": "RATON",
     "09": "AGUILA", "10": "TIGRE", "11": "GATO", "12": "CABALLO", "13": "MONO", "14": "PALOMA", "15": "ZORRO", "16": "OSO", "17": "PAVO", "18": "BURRO",
@@ -21,7 +21,7 @@ ANIMALITOS_MASTER = {
     "89": "ANGUILA", "90": "HURON", "91": "MORROCOY", "92": "CISNE", "93": "GAVIOTA", "94": "PAUJIL", "95": "ESCARABAJO", "96": "CABALLITO DE MAR", "97": "LORO", "98": "COCODRILO", "99": "GUACHARITO"
 }
 
-# --- 2. TABLA DEL BRUJO COMPLETA ---
+# --- 2. TABLA DEL BRUJO ---
 TABLA_BRUJO = [
     ("35", "86"), ("14", "96"), ("02", "46"), ("75", "56"), ("53", "39"), ("37", "52"), ("48", "67"), ("83", "59"), ("94", "91"), ("63", "70"), 
     ("76", "82"), ("50", "65"), ("81", "47"), ("78", "62"), ("89", "71"), ("0", "92"), ("28", "61"), ("09", "38"), ("26", "40"), ("30", "85"), 
@@ -68,42 +68,12 @@ def limpiar_formato_numero(x):
     if val in ["0", "00"]: return val
     return val.zfill(2)
 
-def generar_consejo_ia(rojas, amarillas, verdes):
-    """Genera un consejo basado en los datos reales del sorteo de hoy."""
-    api_key = os.environ.get("GEMINI_API_KEY")
-    mensaje_respaldo = "La energía está concentrada en los números. Sigue la tabla."
-    
-    if not api_key:
-        with open('mensaje_brujo.txt', 'w', encoding='utf-8') as f:
-            f.write(mensaje_respaldo)
-        return f"🔮 <b>ANÁLISIS ESTRATÉGICO:</b>\n<i>\"{mensaje_respaldo}\"</i>\n"
-    
-    # Extraer las mejores parejas para dárselas a la IA
-    top_rojas = ", ".join([r.split('</b>')[0].replace('🔴 <b>', '') for r in rojas[:3]]) if rojas else "Ninguna"
-    top_amarillas = ", ".join([a.split(' (')[0].replace('🟡 ', '') for a in amarillas[:3]]) if amarillas else "Ninguna"
-    
-    contexto_datos = f"Alertas Rojas actuales (Más de 15 días sin salir, altísima probabilidad): {top_rojas}. Alertas Amarillas (calentando): {top_amarillas}. Total de parejas frías/descartadas: {len(verdes)}."
-
-    try:
-        client = genai.Client(api_key=api_key)
-        prompt = f"Actúa como el Brujo Guacharito, un experto analista estadístico de lotería. Basado ESTRICTAMENTE en estos datos de hoy: '{contexto_datos}', escribe una recomendación estratégica de máximo 2 líneas. Dile a los jugadores en qué parejas enfocarse hoy y cuáles ignorar. Sé directo, persuasivo y usa un par de emojis. No uses saludos."
-        
-        respuesta = client.models.generate_content(
-            model='gemini-2.5-flash',
-            contents=prompt
-        )
-        
-        mensaje_magico = respuesta.text.strip()
-        
-        with open('mensaje_brujo.txt', 'w', encoding='utf-8') as f:
-            f.write(mensaje_magico)
-            
-        return f"📊 <b>ANÁLISIS ESTRATÉGICO:</b>\n<i>\"{mensaje_magico}\"</i>\n"
-    except Exception as e:
-        print(f"⚠️ Error conectando con la IA de Gemini: {e}")
-        with open('mensaje_brujo.txt', 'w', encoding='utf-8') as f:
-            f.write(mensaje_respaldo)
-        return f"📊 <b>ANÁLISIS ESTRATÉGICO:</b>\n<i>\"{mensaje_respaldo}\"</i>\n"
+def obtener_pareja_del_brujo(numero):
+    """Busca a qué pareja de la tabla pertenece un número."""
+    for p1, p2 in TABLA_BRUJO:
+        if numero == p1 or numero == p2:
+            return p1, p2
+    return None, None
 
 def enviar_mensaje_telegram(mensaje):
     token = os.environ.get('TELEGRAM_TOKEN')
@@ -114,6 +84,77 @@ def enviar_mensaje_telegram(mensaje):
     payload = {'chat_id': chat_id, 'text': mensaje, 'parse_mode': 'HTML'}
     requests.post(url, data=payload)
 
+# --- NUEVO SISTEMA DE NOTIFICACIÓN DE ACIERTOS (BINGO) ---
+def verificar_y_notificar_bingo(df_viejo, nuevos_registros):
+    """Compara los nuevos resultados con el historial para gritar BINGO si sale una alerta."""
+    if df_viejo.empty or not nuevos_registros:
+        return
+
+    # Solo nos interesan los premios de HOY, para no enviar mensajes atrasados
+    fecha_hoy_str = datetime.now().strftime('%Y-%m-%d')
+    registros_hoy = [r for r in nuevos_registros if r['fecha'] == fecha_hoy_str]
+    
+    if not registros_hoy:
+        return
+
+    df_viejo['fecha'] = pd.to_datetime(df_viejo['fecha'])
+    fecha_hoy_dt = datetime.now()
+    ultimas_salidas = df_viejo.groupby('numero')['fecha'].max()
+
+    mensajes_bingo = []
+
+    for reg in registros_hoy:
+        num = reg['numero']
+        p1, p2 = obtener_pareja_del_brujo(num)
+        
+        if p1 and p2:
+            fecha_p1 = ultimas_salidas.get(p1, fecha_hoy_dt - timedelta(days=999))
+            fecha_p2 = ultimas_salidas.get(p2, fecha_hoy_dt - timedelta(days=999))
+            dias_sin_salir = min((fecha_hoy_dt - fecha_p1).days, (fecha_hoy_dt - fecha_p2).days)
+
+            # Si el número que acaba de salir tenía 15 días o más sin salir (Era Alerta Roja)
+            if dias_sin_salir >= 15:
+                mensajes_bingo.append(f"🎯 <b>¡BINGO DE ALERTA ROJA!</b>\nSalió el <b>{num} ({reg['nombre']})</b> a las {reg['hora']}.\n¡La pareja {p1}-{p2} rompió su racha de {dias_sin_salir} días invicta! A COBRAR 💸")
+            
+            # Si era Alerta Amarilla
+            elif 7 <= dias_sin_salir <= 14:
+                mensajes_bingo.append(f"⚠️ <b>¡BINGO DE ALERTA AMARILLA!</b>\nSalió el <b>{num} ({reg['nombre']})</b> a las {reg['hora']}.\nLa pareja {p1}-{p2} reventó tras {dias_sin_salir} días en observación. ✅")
+
+    if mensajes_bingo:
+        mensaje_final = "🎉🎉 <b>¡EL BRUJO TENÍA RAZÓN!</b> 🎉🎉\n\n" + "\n\n".join(mensajes_bingo)
+        enviar_mensaje_telegram(mensaje_final)
+        time.sleep(2) # Pausa pequeña para que en Telegram llegue primero el Bingo y luego el Reporte
+
+# --- INTELIGENCIA ARTIFICIAL ---
+def generar_consejo_ia(rojas, amarillas, verdes):
+    api_key = os.environ.get("GEMINI_API_KEY")
+    mensaje_respaldo = "La energía está concentrada en los números. Sigue la tabla."
+    
+    if not api_key:
+        with open('mensaje_brujo.txt', 'w', encoding='utf-8') as f:
+            f.write(mensaje_respaldo)
+        return f"📊 <b>ANÁLISIS ESTRATÉGICO:</b>\n<i>\"{mensaje_respaldo}\"</i>\n"
+    
+    top_rojas = ", ".join([r.split('</b>')[0].replace('🔴 <b>', '') for r in rojas[:3]]) if rojas else "Ninguna"
+    top_amarillas = ", ".join([a.split(' (')[0].replace('🟡 ', '') for a in amarillas[:3]]) if amarillas else "Ninguna"
+    
+    contexto_datos = f"Alertas Rojas actuales (Más de 15 días sin salir): {top_rojas}. Alertas Amarillas (calentando): {top_amarillas}. Total descartadas: {len(verdes)}."
+
+    try:
+        client = genai.Client(api_key=api_key)
+        prompt = f"Actúa como el Brujo Guacharito, experto estadístico de lotería. Basado ESTRICTAMENTE en estos datos de hoy: '{contexto_datos}', escribe una recomendación estratégica de máximo 2 líneas. Sé directo, persuasivo y usa un par de emojis. No uses saludos."
+        respuesta = client.models.generate_content(model='gemini-2.5-flash', contents=prompt)
+        mensaje_magico = respuesta.text.strip()
+        
+        with open('mensaje_brujo.txt', 'w', encoding='utf-8') as f:
+            f.write(mensaje_magico)
+        return f"📊 <b>ANÁLISIS ESTRATÉGICO:</b>\n<i>\"{mensaje_magico}\"</i>\n"
+    except Exception as e:
+        with open('mensaje_brujo.txt', 'w', encoding='utf-8') as f:
+            f.write(mensaje_respaldo)
+        return f"📊 <b>ANÁLISIS ESTRATÉGICO:</b>\n<i>\"{mensaje_respaldo}\"</i>\n"
+
+# --- GENERADOR DEL REPORTE DIARIO ---
 def validar_teoria_pronostico(df):
     df['fecha'] = pd.to_datetime(df['fecha'])
     df['numero'] = df['numero'].apply(limpiar_formato_numero)
@@ -138,7 +179,6 @@ def validar_teoria_pronostico(df):
         else:
             parejas_quemadas += 1
 
-    # --- LE PASAMOS LOS DATOS A LA IA ---
     mensaje_ia = generar_consejo_ia(parejas_rojas, parejas_amarillas, parejas_verdes)
 
     mensaje = f"🚨 <b>REPORTE DEL BRUJO</b> 🚨\n"
@@ -160,6 +200,7 @@ def validar_teoria_pronostico(df):
         
     enviar_mensaje_telegram(mensaje)
 
+# --- MOTOR PRINCIPAL ---
 def ejecutar():
     file_name = 'historico_resultados.csv'
     if os.path.exists(file_name):
@@ -178,6 +219,10 @@ def ejecutar():
             time.sleep(1)
 
     if nuevos_registros:
+        # 1. ANTES de guardar los nuevos, verificamos si hubo ACERTOS (BINGO)
+        verificar_y_notificar_bingo(df_historico, nuevos_registros)
+
+        # 2. Ahora sí actualizamos la base de datos
         df_nuevos = pd.DataFrame(nuevos_registros)
         df_final = pd.concat([df_historico, df_nuevos])
         df_final['numero'] = df_final['numero'].apply(limpiar_formato_numero)
@@ -185,8 +230,11 @@ def ejecutar():
         df_final['hora_temp'] = pd.to_datetime(df_final['hora'], format='%I:%M %p', errors='coerce').dt.time
         df_final = df_final.sort_values(by=['fecha', 'hora_temp'], ascending=[False, False]).drop(columns=['hora_temp'])
         df_final.to_csv(file_name, index=False)
+        
+        # 3. Generamos el reporte regular
         validar_teoria_pronostico(df_final)
     else:
+        # Si no hubo sorteos nuevos en esta media hora, igual mandamos el reporte
         validar_teoria_pronostico(df_historico)
 
 if __name__ == "__main__":
