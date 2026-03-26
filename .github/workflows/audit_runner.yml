@@ -13,16 +13,26 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout del Repositorio
-        uses: actions/checkout@v4 # ACTUALIZADO A v4
+        uses: actions/checkout@v4
 
       - name: Configurar Entorno Python
-        uses: actions/setup-python@v5 # ACTUALIZADO A v5
+        uses: actions/setup-python@v5
         with:
           python-version: '3.9'
 
       - name: Instalar Dependencias
         run: |
           pip install requests beautifulsoup4 pandas lxml google-generativeai
+
+      - name: Prueba de Secretos
+        env:
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+        run: |
+          if [ -z "$GEMINI_API_KEY" ]; then
+            echo "❌ ERROR: La variable GEMINI_API_KEY esta VACIA."
+          else
+            echo "✅ EXITO: La variable GEMINI_API_KEY tiene contenido."
+          fi
 
       - name: Ejecutar Extractor y Análisis
         env:
