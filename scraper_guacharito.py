@@ -5,7 +5,7 @@ import os
 import re
 from datetime import datetime, timedelta
 import time
-import google.generativeai as genai
+from google import genai
 
 # --- 1. DICCIONARIO MAESTRO COMPLETO ---
 ANIMALITOS_MASTER = {
@@ -69,7 +69,6 @@ def limpiar_formato_numero(x):
     return val.zfill(2)
 
 def generar_consejo_ia():
-    """Conecta con Gemini para crear el mensaje místico diario."""
     api_key = os.environ.get("GEMINI_API_KEY")
     mensaje_respaldo = "La energía está concentrada en los números. Sigue la tabla."
     
@@ -80,21 +79,23 @@ def generar_consejo_ia():
         return f"🔮 <b>LA VOZ DEL BRUJO:</b>\n<i>\"{mensaje_respaldo}\"</i>\n"
     
     try:
-        genai.configure(api_key=api_key)
-        model = genai.GenerativeModel('gemini-1.5-flash')
+        # Usamos la nueva librería oficial de Google GenAI
+        client = genai.Client(api_key=api_key)
         prompt = "Actúa como el místico Brujo Guacharito, un experto en lotería de animalitos venezolana. Escribe un consejo corto, enigmático y muy motivador (máximo 2 líneas) para mis seguidores que jugarán hoy. Usa un par de emojis relacionados a la suerte o magia. No pongas saludos largos, ve directo al consejo."
-        respuesta = model.generate_content(prompt)
+        
+        respuesta = client.models.generate_content(
+            model='gemini-2.5-flash',
+            contents=prompt
+        )
         
         mensaje_magico = respuesta.text.strip()
         
-        # Guardar el mensaje para que la web lo lea (¡Esta es la línea que faltaba si había error!)
         with open('mensaje_brujo.txt', 'w', encoding='utf-8') as f:
             f.write(mensaje_magico)
             
         return f"🔮 <b>LA VOZ DEL BRUJO:</b>\n<i>\"{mensaje_magico}\"</i>\n"
     except Exception as e:
         print(f"⚠️ Error conectando con la IA de Gemini: {e}")
-        # BLINDAJE: Si la IA falla, IGUAL creamos el archivo para que GitHub no explote
         with open('mensaje_brujo.txt', 'w', encoding='utf-8') as f:
             f.write(mensaje_respaldo)
         return f"🔮 <b>LA VOZ DEL BRUJO:</b>\n<i>\"{mensaje_respaldo}\"</i>\n"
@@ -132,7 +133,6 @@ def validar_teoria_pronostico(df):
         else:
             parejas_quemadas += 1
 
-    # --- INTEGRAMOS LA IA AQUÍ ---
     mensaje_ia = generar_consejo_ia()
 
     mensaje = f"🚨 <b>REPORTE DEL BRUJO</b> 🚨\n"
