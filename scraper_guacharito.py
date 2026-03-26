@@ -71,8 +71,13 @@ def limpiar_formato_numero(x):
 def generar_consejo_ia():
     """Conecta con Gemini para crear el mensaje místico diario."""
     api_key = os.environ.get("GEMINI_API_KEY")
+    mensaje_respaldo = "La energía está concentrada en los números. Sigue la tabla."
+    
     if not api_key:
-        return "🔮 <i>Los astros están en silencio hoy, pero los números no mienten. ¡A ganar!</i>"
+        print("⚠️ No se encontró GEMINI_API_KEY en los secretos.")
+        with open('mensaje_brujo.txt', 'w', encoding='utf-8') as f:
+            f.write(mensaje_respaldo)
+        return f"🔮 <b>LA VOZ DEL BRUJO:</b>\n<i>\"{mensaje_respaldo}\"</i>\n"
     
     try:
         genai.configure(api_key=api_key)
@@ -82,13 +87,17 @@ def generar_consejo_ia():
         
         mensaje_magico = respuesta.text.strip()
         
-        # Guardar el mensaje para que la web lo lea
+        # Guardar el mensaje para que la web lo lea (¡Esta es la línea que faltaba si había error!)
         with open('mensaje_brujo.txt', 'w', encoding='utf-8') as f:
             f.write(mensaje_magico)
             
         return f"🔮 <b>LA VOZ DEL BRUJO:</b>\n<i>\"{mensaje_magico}\"</i>\n"
     except Exception as e:
-        return "🔮 <i>La energía está concentrada en los números. Sigue la tabla.</i>"
+        print(f"⚠️ Error conectando con la IA de Gemini: {e}")
+        # BLINDAJE: Si la IA falla, IGUAL creamos el archivo para que GitHub no explote
+        with open('mensaje_brujo.txt', 'w', encoding='utf-8') as f:
+            f.write(mensaje_respaldo)
+        return f"🔮 <b>LA VOZ DEL BRUJO:</b>\n<i>\"{mensaje_respaldo}\"</i>\n"
 
 def enviar_mensaje_telegram(mensaje):
     token = os.environ.get('TELEGRAM_TOKEN')
@@ -129,7 +138,7 @@ def validar_teoria_pronostico(df):
     mensaje = f"🚨 <b>REPORTE DEL BRUJO</b> 🚨\n"
     mensaje += f"📅 Fecha: {fecha_hoy.strftime('%Y-%m-%d %I:%M %p')}\n"
     mensaje += "➖➖➖➖➖➖➖➖➖➖\n"
-    mensaje += f"{mensaje_ia}\n" # El texto dinámico aparece aquí
+    mensaje += f"{mensaje_ia}\n" 
     mensaje += "➖➖➖➖➖➖➖➖➖➖\n\n"
     mensaje += f"🔥 Descartadas hoy: {parejas_quemadas} de 50\n\n"
     
