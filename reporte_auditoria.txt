@@ -1,13 +1,13 @@
 📊 REPORTE DE BACKTESTING: LA PRUEBA DE FUEGO 📊
-Analizado el: 26-03-2026
+Analizado el: 27-03-2026
 ==================================================
 
-🔍 Total de 'Alertas Rojas' históricas detectadas: 98
+🔍 Total de 'Alertas Rojas' históricas detectadas: 95
 
 ¿Cuánto tardaron en salir DESPUÉS de entrar en Alerta Roja?
-🟢 Muy Rápido (1 a 3 días de espera): 55 veces (56.1%)
-🟡 Normal (4 a 7 días de espera): 25 veces (25.5%)
-🔴 Lento (Más de 7 días de espera): 18 veces (18.4%)
+🟢 Muy Rápido (1 a 3 días de espera): 53 veces (55.8%)
+🟡 Normal (4 a 7 días de espera): 26 veces (27.4%)
+🔴 Lento (Más de 7 días de espera): 16 veces (16.8%)
 
 --- CONCLUSIÓN DEL SISTEMA ---
 ✅ ESTRATEGIA SÓLIDA: Más del 50% de las alertas rojas salen en la primera semana. Es rentable usar la técnica de 'perseguir' el número subiendo la apuesta.
