@@ -69,7 +69,6 @@ def limpiar_formato_numero(x):
     return val.zfill(2)
 
 def obtener_pareja_del_brujo(numero):
-    """Busca a qué pareja de la tabla pertenece un número."""
     for p1, p2 in TABLA_BRUJO:
         if numero == p1 or numero == p2:
             return p1, p2
@@ -84,20 +83,18 @@ def enviar_mensaje_telegram(mensaje):
     payload = {'chat_id': chat_id, 'text': mensaje, 'parse_mode': 'HTML'}
     requests.post(url, data=payload)
 
-# --- NUEVO SISTEMA DE NOTIFICACIÓN DE ACIERTOS (BINGO) ---
 def verificar_y_notificar_bingo(df_viejo, nuevos_registros):
-    """Compara los nuevos resultados con el historial para gritar BINGO si sale una alerta."""
     if df_viejo.empty or not nuevos_registros:
         return
 
-    # Solo nos interesan los premios de HOY, para no enviar mensajes atrasados
     fecha_hoy_str = datetime.now().strftime('%Y-%m-%d')
     registros_hoy = [r for r in nuevos_registros if r['fecha'] == fecha_hoy_str]
     
     if not registros_hoy:
         return
 
-    df_viejo['fecha'] = pd.to_datetime(df_viejo['fecha'])
+    # --- CORRECCIÓN 1: format='mixed' agregado aquí ---
+    df_viejo['fecha'] = pd.to_datetime(df_viejo['fecha'], format='mixed', errors='coerce')
     fecha_hoy_dt = datetime.now()
     ultimas_salidas = df_viejo.groupby('numero')['fecha'].max()
 
@@ -112,20 +109,17 @@ def verificar_y_notificar_bingo(df_viejo, nuevos_registros):
             fecha_p2 = ultimas_salidas.get(p2, fecha_hoy_dt - timedelta(days=999))
             dias_sin_salir = min((fecha_hoy_dt - fecha_p1).days, (fecha_hoy_dt - fecha_p2).days)
 
-            # Si el número que acaba de salir tenía 15 días o más sin salir (Era Alerta Roja)
             if dias_sin_salir >= 15:
                 mensajes_bingo.append(f"🎯 <b>¡BINGO DE ALERTA ROJA!</b>\nSalió el <b>{num} ({reg['nombre']})</b> a las {reg['hora']}.\n¡La pareja {p1}-{p2} rompió su racha de {dias_sin_salir} días invicta! A COBRAR 💸")
             
-            # Si era Alerta Amarilla
             elif 7 <= dias_sin_salir <= 14:
                 mensajes_bingo.append(f"⚠️ <b>¡BINGO DE ALERTA AMARILLA!</b>\nSalió el <b>{num} ({reg['nombre']})</b> a las {reg['hora']}.\nLa pareja {p1}-{p2} reventó tras {dias_sin_salir} días en observación. ✅")
 
     if mensajes_bingo:
         mensaje_final = "🎉🎉 <b>¡EL BRUJO TENÍA RAZÓN!</b> 🎉🎉\n\n" + "\n\n".join(mensajes_bingo)
         enviar_mensaje_telegram(mensaje_final)
-        time.sleep(2) # Pausa pequeña para que en Telegram llegue primero el Bingo y luego el Reporte
+        time.sleep(2)
 
-# --- INTELIGENCIA ARTIFICIAL ---
 def generar_consejo_ia(rojas, amarillas, verdes):
     api_key = os.environ.get("GEMINI_API_KEY")
     mensaje_respaldo = "La energía está concentrada en los números. Sigue la tabla."
@@ -154,9 +148,9 @@ def generar_consejo_ia(rojas, amarillas, verdes):
             f.write(mensaje_respaldo)
         return f"📊 <b>ANÁLISIS ESTRATÉGICO:</b>\n<i>\"{mensaje_respaldo}\"</i>\n"
 
-# --- GENERADOR DEL REPORTE DIARIO ---
 def validar_teoria_pronostico(df):
-    df['fecha'] = pd.to_datetime(df['fecha'])
+    # --- CORRECCIÓN 2: format='mixed' agregado aquí ---
+    df['fecha'] = pd.to_datetime(df['fecha'], format='mixed', errors='coerce')
     df['numero'] = df['numero'].apply(limpiar_formato_numero)
     fecha_hoy = datetime.now()
     ultimas_salidas = df.groupby('numero')['fecha'].max()
@@ -200,7 +194,6 @@ def validar_teoria_pronostico(df):
         
     enviar_mensaje_telegram(mensaje)
 
-# --- MOTOR PRINCIPAL ---
 def ejecutar():
     file_name = 'historico_resultados.csv'
     if os.path.exists(file_name):
@@ -219,10 +212,8 @@ def ejecutar():
             time.sleep(1)
 
     if nuevos_registros:
-        # 1. ANTES de guardar los nuevos, verificamos si hubo ACERTOS (BINGO)
         verificar_y_notificar_bingo(df_historico, nuevos_registros)
 
-        # 2. Ahora sí actualizamos la base de datos
         df_nuevos = pd.DataFrame(nuevos_registros)
         df_final = pd.concat([df_historico, df_nuevos])
         df_final['numero'] = df_final['numero'].apply(limpiar_formato_numero)
@@ -231,10 +222,8 @@ def ejecutar():
         df_final = df_final.sort_values(by=['fecha', 'hora_temp'], ascending=[False, False]).drop(columns=['hora_temp'])
         df_final.to_csv(file_name, index=False)
         
-        # 3. Generamos el reporte regular
         validar_teoria_pronostico(df_final)
     else:
-        # Si no hubo sorteos nuevos en esta media hora, igual mandamos el reporte
         validar_teoria_pronostico(df_historico)
 
 if __name__ == "__main__":
