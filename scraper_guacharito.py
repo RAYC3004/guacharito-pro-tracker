@@ -93,7 +93,6 @@ def verificar_y_notificar_bingo(df_viejo, nuevos_registros):
     if not registros_hoy:
         return
 
-    # --- CORRECCIÓN 1: format='mixed' agregado aquí ---
     df_viejo['fecha'] = pd.to_datetime(df_viejo['fecha'], format='mixed', errors='coerce')
     fecha_hoy_dt = datetime.now()
     ultimas_salidas = df_viejo.groupby('numero')['fecha'].max()
@@ -149,7 +148,6 @@ def generar_consejo_ia(rojas, amarillas, verdes):
         return f"📊 <b>ANÁLISIS ESTRATÉGICO:</b>\n<i>\"{mensaje_respaldo}\"</i>\n"
 
 def validar_teoria_pronostico(df):
-    # --- CORRECCIÓN 2: format='mixed' agregado aquí ---
     df['fecha'] = pd.to_datetime(df['fecha'], format='mixed', errors='coerce')
     df['numero'] = df['numero'].apply(limpiar_formato_numero)
     fecha_hoy = datetime.now()
@@ -198,7 +196,8 @@ def ejecutar():
     file_name = 'historico_resultados.csv'
     if os.path.exists(file_name):
         df_historico = pd.read_csv(file_name, dtype={'numero': str})
-        fechas_ya_descargadas = set(df_historico['fecha'].unique())
+        # AQUÍ ESTÁ LA LIMPIEZA DE FECHAS PARA QUE NO SE QUEDE CARGANDO 4 MINUTOS
+        fechas_ya_descargadas = set(str(fecha).split(' ')[0] for fecha in df_historico['fecha'].unique())
     else:
         df_historico = pd.DataFrame(columns=['fecha', 'hora', 'nombre', 'numero'])
         fechas_ya_descargadas = set()
