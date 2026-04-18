@@ -2,12 +2,12 @@
 Analizado el: 18-04-2026
 ==================================================
 
-🔍 Total de 'Alertas Rojas' históricas detectadas: 104
+🔍 Total de 'Alertas Rojas' históricas detectadas: 105
 
 ¿Cuánto tardaron en salir DESPUÉS de entrar en Alerta Roja?
-🟢 Muy Rápido (1 a 3 días de espera): 55 veces (52.9%)
-🟡 Normal (4 a 7 días de espera): 31 veces (29.8%)
-🔴 Lento (Más de 7 días de espera): 18 veces (17.3%)
+🟢 Muy Rápido (1 a 3 días de espera): 56 veces (53.3%)
+🟡 Normal (4 a 7 días de espera): 31 veces (29.5%)
+🔴 Lento (Más de 7 días de espera): 18 veces (17.1%)
 
 --- CONCLUSIÓN DEL SISTEMA ---
 ✅ ESTRATEGIA SÓLIDA: Más del 50% de las alertas rojas salen en la primera semana. Es rentable usar la técnica de 'perseguir' el número subiendo la apuesta.
