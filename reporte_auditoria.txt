@@ -1,5 +1,5 @@
 📊 REPORTE DE BACKTESTING: LA PRUEBA DE FUEGO 📊
-Analizado el: 19-07-2026
+Analizado el: 20-07-2026
 ==================================================
 
 🔍 Total de 'Alertas Rojas' históricas detectadas: 111
